@@ -2,6 +2,7 @@ package com.example.task41p;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -12,14 +13,17 @@ import org.w3c.dom.Text;
 public class MainActivity extends AppCompatActivity {
 
     private int seconds = 0;
-
+    String workouttype;
     private boolean running;
+    SharedPreferences sharedPreferences;
+    TextView output;
 
-    //private boolean wasRunning;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        output = findViewById(R.id.outputText);
+        sharedPreferences = getSharedPreferences("com.example.task41p", MODE_PRIVATE);
         if (savedInstanceState != null) {
 
             // Get the previous state of the stopwatch
@@ -31,11 +35,34 @@ public class MainActivity extends AppCompatActivity {
             running
                     = savedInstanceState
                     .getBoolean("running");
-           // wasRunning
-             //       = savedInstanceState
-               //     .getBoolean("wasRunning");
+
         }
+        checkpref();
         runTimer();
+
+    }
+
+    private void checkpref() {
+        int secs = sharedPreferences.getInt("Secs", 0);
+        String type = sharedPreferences.getString("type", "");
+        boolean isrunning = sharedPreferences.getBoolean("run", false);
+        seconds = secs;
+        output.setText(type);
+        running = isrunning;
+
+    }
+
+    @Override
+    protected void onStop() {
+
+        super.onStop();
+
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt("Secs", seconds);
+        editor.putString("type", workouttype);
+        editor.putBoolean("run", running);
+        editor.apply();
+
     }
 
     public void onSaveInstanceState(Bundle savedInstanceState) {
@@ -62,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void pauseTimer(View view){
         running = false;
-       // wasRunning = true;
+
     }
 
     private void showOutput(View view) {
@@ -71,7 +98,9 @@ public class MainActivity extends AppCompatActivity {
         int minutes = (seconds % 3600) / 60;
         int secs = seconds % 60;
         String out = String.format("You Spent %d:%d on %s", minutes, secs, input.getText());
+
         output.setText(out);
+        workouttype = output.getText().toString();
 
     }
 
